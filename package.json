@@ -1,0 +1,16 @@
+{
+  "name": "keymaster-pro",
+  "version": "1.0.0",
+  "description": "Project License, User & Device Lock Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": ["license", "dashboard", "key-manager", "device-lock"],
+  "author": "Developer",
+  "license": "ISC",
+  "type": "commonjs"
+}
