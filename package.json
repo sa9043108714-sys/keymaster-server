@@ -1,13 +1,16 @@
 {
   "name": "keymaster-pro",
   "version": "1.0.0",
-  "description": "Project License, User & Device Lock Dashboard",
+  "description": "24/7 Cloud Project & License Key Manager Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
   },
   "keywords": ["license", "dashboard", "key-manager", "device-lock"],
   "author": "Developer",
