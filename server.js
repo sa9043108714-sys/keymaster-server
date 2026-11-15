@@ -8,7 +8,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'data.db');
-const PUBLIC_DIR = path.join(__dirname, 'public');
+const PUBLIC_DIR = fs.existsSync(path.join(__dirname, 'public')) ? path.join(__dirname, 'public') : __dirname;
 
 // Initialize SQLite Database
 const db = new DatabaseSync(DB_FILE);
