@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ta, en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KeyMaster Pro - Developer License & Device Control</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- 1. DEVELOPER LOGIN SCREEN -->
+  <div id="developer-login-screen" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-icon-lg">🔐</div>
+        <h2>Developer Master Login</h2>
+        <p>நீங்கள் (Developer) மட்டுமே Key & User Password உருவாக்க முடியும்.</p>
+      </div>
+
+      <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label>Developer Username</label>
+          <input type="text" id="admin-username" value="admin" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Master Password</label>
+          <input type="password" id="admin-password" placeholder="Default: developer123" required autocomplete="current-password">
+        </div>
+        <div class="default-cred-hint">
+          💡 Default Login: <code>admin</code> / <code>developer123</code>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:14px;">
+          🔓 Open Developer Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MAIN DASHBOARD -->
+  <div id="developer-dashboard" class="app-layout" style="display: none;">
+    <header class="navbar">
+      <div class="brand">
+        <div class="logo-icon">🔐</div>
+        <div>
+          <h1>KeyMaster Pro</h1>
+          <span class="subtitle">Developer Control: Projects, Users, Device Lock & Expiry</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <div class="developer-tag">
+          <span class="online-indicator"></span> <b>Developer:</b> <span id="admin-user-display">admin</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()">🔑 Change Password</button>
+        <button class="btn btn-outline btn-sm" onclick="handleAdminLogout()">🚪 Logout</button>
+        <button class="btn btn-secondary" onclick="openNewProjectModal()">📁 New Project</button>
+        <button class="btn btn-primary" onclick="openNewKeyModal()">✨ Create User & Key</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="stats-grid">
+        <div class="stat-card"><div class="stat-icon bg-blue">📁</div><div class="stat-details"><span class="stat-label">Projects</span><span class="stat-value" id="stat-projects">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon bg-green">🔑</div><div class="stat-details"><span class="stat-label">Active Users / Keys</span><span class="stat-value" id="stat-active">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon bg-amber">💻</div><div class="stat-details"><span class="stat-label">Bound Devices (Locked)</span><span class="stat-value" id="stat-devices">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon bg-red">⌛</div><div class="stat-details"><span class="stat-label">Expired Accounts</span><span class="stat-value" id="stat-expired">0</span></div></div>
+      </section>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('keys-tab')">🔑 User Passwords & Keys</button>
+        <button class="tab-btn" onclick="switchTab('projects-tab')">📂 Projects List</button>
+        <button class="tab-btn" onclick="switchTab('client-login-demo-tab')">🌐 Bot Login Integration</button>
+        <button class="tab-btn" onclick="switchTab('tester-tab')">🧪 Live API Tester</button>
+        <button class="tab-btn" onclick="switchTab('logs-tab')">📋 Access & Device Logs</button>
+      </div>
+
+      <!-- TAB 1: KEYS -->
+      <section id="keys-tab" class="tab-content active">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search by Key, Username, Customer..." oninput="filterLicenses()">
+          </div>
+          <div class="filter-controls">
+            <select id="project-filter" onchange="filterLicenses()"><option value="">All Projects</option></select>
+            <select id="status-filter" onchange="filterLicenses()">
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="expired">Expired</option>
+              <option value="suspended">Suspended</option>
+            </select>
+            <button class="btn btn-outline" onclick="loadAllData()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>License Key</th><th>Project, User & Password</th><th>Device Access Limit</th><th>Validity (Days Left)</th><th>Status</th><th style="text-align: right;">Admin Actions</th></tr>
+            </thead>
+            <tbody id="licenses-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 2: PROJECTS -->
+      <section id="projects-tab" class="tab-content">
+        <div class="section-header">
+          <h2>Your Software / Bot Projects</h2>
+          <button class="btn btn-primary" onclick="openNewProjectModal()">+ Add New Project</button>
+        </div>
+        <div class="projects-grid" id="projects-list"></div>
+      </section>
+
+      <!-- TAB 3: BOT INTEGRATION -->
+      <section id="client-login-demo-tab" class="tab-content">
+        <div class="integration-grid">
+          <div class="integration-card">
+            <h3>🔗 Bot Login Page Integration Code</h3>
+            <pre class="code-display" id="client-login-code">
+async function handleUserLogin(username, password) {
+  const response = await fetch('http://localhost:3000/api/client-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await response.json();
+  if (data.success) {
+    alert("Login Success! Days left: " + data.user.days_remaining);
+  } else {
+    alert("Denied: " + data.message);
+  }
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: TESTER -->
+      <section id="tester-tab" class="tab-content">
+        <div class="tester-card">
+          <h2>🧪 Test Key & Device Verification API</h2>
+          <div class="form-group"><label>License Key</label><input type="text" id="test-key" placeholder="KEY-XXXX-XXXX-XXXX"></div>
+          <div class="form-row">
+            <div class="form-group"><label>Username</label><input type="text" id="test-user"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="test-pass"></div>
+          </div>
+          <button class="btn btn-primary" onclick="runApiTest()">🚀 Test Verification</button>
+          <pre id="test-response" style="margin-top:15px; padding:15px; background:#0d1424; color:#38bdf8; border-radius:8px;"></pre>
+        </div>
+      </section>
+
+      <!-- TAB 5: LOGS -->
+      <section id="logs-tab" class="tab-content">
+        <div class="section-header"><h2>📋 Real-time Device & Security Logs</h2></div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead><tr><th>Timestamp</th><th>License Key</th><th>Action</th><th>Status</th><th>Device ID</th><th>Details</th></tr></thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL: Create New User & Key -->
+    <div id="new-key-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header"><h3>✨ Create New User, Password & Key</h3><button class="close-btn" onclick="closeModal('new-key-modal')">&times;</button></div>
+        <div class="modal-body">
+          <div class="form-group"><label>Select Your Project <span class="required">*</span></label><select id="new-key-project" required></select></div>
+          <div class="form-group"><label>Customer Name</label><input type="text" id="new-key-customer" placeholder="e.g. Saravanan, Karthik"></div>
+          <div class="form-row">
+            <div class="form-group"><label>Username <span class="required">*</span></label><input type="text" id="new-key-user" required></div>
+            <div class="form-group"><label>Password <span class="required">*</span></label><div class="input-with-button"><input type="text" id="new-key-pass" required><button class="btn btn-secondary btn-sm" type="button" onclick="generateRandomPass()">Auto</button></div></div>
+          </div>
+          <div class="form-group"><label>License Key Code</label><div class="input-with-button"><input type="text" id="new-key-code"><button class="btn btn-secondary btn-sm" type="button" onclick="generateRandomKeyCode()">Gen</button></div></div>
+          <div class="form-row">
+            <div class="form-group"><label>Device Access Lock <span class="required">*</span></label>
+              <select id="new-key-devices">
+                <option value="1" selected>1 Device Lock (Single PC Only)</option>
+                <option value="2">2 Devices</option>
+                <option value="5">5 Devices</option>
+                <option value="999">Unlimited Devices</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Validity Duration <span class="required">*</span></label>
+              <select id="new-key-days">
+                <option value="7">7 Days Trial</option>
+                <option value="30" selected>30 Days (1 Month)</option>
+                <option value="90">90 Days (3 Months)</option>
+                <option value="365">365 Days (1 Year)</option>
+                <option value="custom">Custom Days...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" id="custom-days-group" style="display:none;"><label>Enter Custom Days</label><input type="number" id="new-key-custom-days" min="1" max="3650"></div>
+          <div class="form-group"><label>Notes</label><textarea id="new-key-notes" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('new-key-modal')">Cancel</button><button class="btn btn-primary" onclick="submitCreateKey()">Generate & Save Key</button></div>
+      </div>
+    </div>
+
+    <!-- MODAL: Add New Project -->
+    <div id="new-project-modal" class="modal-overlay">
+      <div class="modal" style="max-width: 520px;">
+        <div class="modal-header"><h3>📁 Add New Project</h3><button class="close-btn" onclick="closeModal('new-project-modal')">&times;</button></div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>📂 Select Project Folder from your PC</label>
+            <div class="input-with-button">
+              <input type="text" id="new-proj-folder" placeholder="e.g. C:\Users\gg031\Downloads\fox self bot sale" oninput="handleFolderPathInput()">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-pc" onclick="browseFolderFromPc()">📂 Browse PC</button>
+            </div>
+            <input type="file" id="browser-folder-input" webkitdirectory directory style="display:none;" onchange="handleHtml5FolderPicked(event)">
+            <div class="folder-shortcuts">
+              <span class="shortcut-label">Quick Suggestions:</span>
+              <button type="button" class="shortcut-chip" onclick="quickSelectFolder('C:\\Users\\gg031\\Downloads\\fox self bot sale')">📁 fox self bot sale</button>
+            </div>
+            <div id="folder-scan-info" class="folder-scan-box" style="display:none;"></div>
+          </div>
+
+          <div class="form-group"><label>Project / Software Name <span class="required">*</span></label><input type="text" id="new-proj-name" required></div>
+          <div class="form-group"><label>Description / Version</label><input type="text" id="new-proj-desc"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('new-project-modal')">Cancel</button><button class="btn btn-primary" onclick="submitCreateProject()">Save Project</button></div>
+      </div>
+    </div>
+
+    <!-- MODAL: Manage Devices -->
+    <div id="devices-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header"><h3 id="devices-modal-title">💻 Bound Devices</h3><button class="close-btn" onclick="closeModal('devices-modal')">&times;</button></div>
+        <div class="modal-body">
+          <p id="devices-modal-desc" class="modal-hint"></p>
+          <div class="devices-table-wrap">
+            <table class="data-table"><thead><tr><th>Device ID (HWID)</th><th>Device Name / IP</th><th>Last Active</th><th>Action</th></tr></thead><tbody id="devices-modal-tbody"></tbody></table>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-danger" onclick="resetAllDevicesForCurrentKey()">⚠️ Reset All Devices</button><button class="btn btn-secondary" onclick="closeModal('devices-modal')">Close</button></div>
+      </div>
+    </div>
+
+    <!-- MODAL: Extend Days -->
+    <div id="extend-modal" class="modal-overlay">
+      <div class="modal modal-sm">
+        <div class="modal-header"><h3>⌛ Extend Key Validity</h3><button class="close-btn" onclick="closeModal('extend-modal')">&times;</button></div>
+        <div class="modal-body">
+          <p id="extend-modal-key-name" class="modal-hint"></p>
+          <div class="form-group">
+            <label>Add More Days</label>
+            <select id="extend-days-select">
+              <option value="7">+7 Days</option>
+              <option value="30" selected>+30 Days (1 Month)</option>
+              <option value="90">+90 Days</option>
+              <option value="365">+365 Days (1 Year)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('extend-modal')">Cancel</button><button class="btn btn-primary" onclick="submitExtendKey()">Add Days</button></div>
+      </div>
+    </div>
+
+    <!-- MODAL: Change Password -->
+    <div id="password-modal" class="modal-overlay">
+      <div class="modal modal-sm">
+        <div class="modal-header"><h3>🔑 Change Developer Password</h3><button class="close-btn" onclick="closeModal('password-modal')">&times;</button></div>
+        <div class="modal-body"><div class="form-group"><label>New Password (Min 6 chars)</label><input type="password" id="new-admin-password" required></div></div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('password-modal')">Cancel</button><button class="btn btn-primary" onclick="submitChangePassword()">Update</button></div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
